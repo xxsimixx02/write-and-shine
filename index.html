@@ -1,0 +1,757 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,'Segoe UI',sans-serif);background:var(--color-background-tertiary,#f5f5f0);min-height:100vh;overflow-x:hidden}
+:root{--purple:#7F77DD;--teal:#1D9E75;--coral:#D85A30;--amber:#EF9F27;--blue:#378ADD;--green:#639922;--pink:#D4537E;--purpleLight:#EEEDFE;--tealLight:#E1F5EE;--coralLight:#FAECE7;--amberLight:#FAEEDA;--blueLight:#E6F1FB;--star:#FAC775}
+
+.screen{display:none;padding:16px;min-height:100vh}
+.screen.active{display:block}
+
+/* HOME */
+#home{background:linear-gradient(135deg,#EEEDFE 0%,#E1F5EE 100%)}
+.home-header{text-align:center;padding:24px 0 16px}
+.home-header h1{font-size:28px;font-weight:500;color:#3C3489}
+.home-header p{font-size:15px;color:#534AB7;margin-top:6px}
+.xp-bar-wrap{background:white;border-radius:24px;padding:12px 20px;margin:12px 0 20px;display:flex;align-items:center;gap:16px;border:0.5px solid #CECBF6}
+.avatar{width:52px;height:52px;border-radius:50%;background:#7F77DD;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.xp-info{flex:1}
+.xp-info .name{font-weight:500;font-size:15px;color:var(--color-text-primary,#111)}
+.xp-info .level{font-size:12px;color:#534AB7}
+.xp-track{height:10px;background:#EEEDFE;border-radius:10px;margin-top:6px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,#7F77DD,#1D9E75);border-radius:10px;transition:width .5s}
+.xp-pts{font-weight:500;font-size:15px;color:#534AB7;white-space:nowrap}
+.modules{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.module-card{background:white;border-radius:16px;padding:20px 16px;cursor:pointer;border:2px solid transparent;transition:all .18s;text-align:center}
+.module-card:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.1)}
+.module-card .icon{font-size:36px;margin-bottom:8px}
+.module-card h3{font-size:15px;font-weight:500;margin-bottom:4px}
+.module-card p{font-size:12px;color:var(--color-text-secondary,#666)}
+.module-card.outline{border-color:#CECBF6;background:#EEEDFE}
+.module-card.essay{border-color:#9FE1CB;background:#E1F5EE}
+.module-card.typing{border-color:#FAC775;background:#FAEEDA}
+.module-card.spelling{border-color:#B5D4F4;background:#E6F1FB}
+.badges-row{margin-top:16px}
+.badges-row h4{font-size:13px;font-weight:500;color:var(--color-text-secondary,#666);margin-bottom:8px}
+.badges{display:flex;gap:8px;flex-wrap:wrap}
+.badge{background:white;border-radius:20px;padding:4px 12px;font-size:12px;display:flex;align-items:center;gap:6px;border:0.5px solid var(--color-border-tertiary,#ddd)}
+.badge.earned{background:#FAC775;border-color:#EF9F27;color:#412402}
+
+/* GENERIC */
+.back-btn{background:none;border:0.5px solid var(--color-border-secondary,#bbb);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;margin-bottom:16px;color:var(--color-text-primary,#111);display:flex;align-items:center;gap:6px}
+.back-btn:hover{background:var(--color-background-secondary,#f0f0f0)}
+.screen-title{font-size:22px;font-weight:500;margin-bottom:4px;color:var(--color-text-primary,#111)}
+.screen-sub{font-size:14px;color:var(--color-text-secondary,#666);margin-bottom:20px}
+.pts-badge{display:inline-flex;align-items:center;gap:6px;background:#FAEEDA;border:0.5px solid #FAC775;border-radius:20px;padding:4px 14px;font-size:13px;color:#412402;font-weight:500}
+
+/* OUTLINE */
+.topic-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.topic-btn{background:white;border:2px solid #CECBF6;border-radius:12px;padding:16px;cursor:pointer;text-align:left;font-size:14px;font-weight:500;color:#3C3489;transition:all .15s}
+.topic-btn:hover,.topic-btn.selected{background:#EEEDFE;border-color:#7F77DD}
+.outline-section{background:white;border-radius:12px;padding:16px;margin-bottom:12px;border:0.5px solid #CECBF6}
+.outline-label{font-size:12px;font-weight:500;color:#534AB7;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.outline-label .badge-letter{width:22px;height:22px;background:#7F77DD;border-radius:50%;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0}
+textarea.outline-input{width:100%;border:1px solid #CECBF6;border-radius:8px;padding:10px;font-size:14px;resize:none;font-family:inherit;background:var(--color-background-primary,white);color:var(--color-text-primary,#111);min-height:60px}
+textarea.outline-input:focus{outline:none;border-color:#7F77DD;box-shadow:0 0 0 2px #EEEDFE}
+.action-btn{padding:10px 24px;border-radius:10px;border:none;cursor:pointer;font-size:14px;font-weight:500;transition:all .15s}
+.action-btn.primary{background:#7F77DD;color:white}
+.action-btn.primary:hover{background:#534AB7}
+.action-btn.success{background:#1D9E75;color:white}
+.action-btn.success:hover{background:#0F6E56}
+.action-btn.danger{background:#D85A30;color:white}
+.action-btn.danger:hover{background:#993C1D}
+.action-btn:disabled{opacity:.5;cursor:default}
+
+/* ESSAY */
+.essay-outline-ref{background:#EEEDFE;border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px;color:#3C3489}
+.essay-outline-ref h4{font-weight:500;margin-bottom:6px}
+.essay-outline-ref ul{padding-left:16px;list-style:disc}
+.essay-outline-ref li{margin-bottom:2px}
+textarea.essay-area{width:100%;min-height:220px;border:1px solid #9FE1CB;border-radius:10px;padding:14px;font-size:15px;line-height:1.7;resize:vertical;font-family:inherit;background:var(--color-background-primary,white);color:var(--color-text-primary,#111)}
+textarea.essay-area:focus{outline:none;border-color:#1D9E75;box-shadow:0 0 0 2px #E1F5EE}
+.essay-toolbar{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.feedback-box{background:#E1F5EE;border:0.5px solid #9FE1CB;border-radius:10px;padding:14px;margin-top:14px;font-size:14px}
+.feedback-box h4{font-weight:500;color:#0F6E56;margin-bottom:8px}
+.feedback-item{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px}
+.saved-toast{position:fixed;bottom:24px;right:24px;background:#1D9E75;color:white;border-radius:10px;padding:10px 20px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s}
+.saved-toast.show{opacity:1}
+
+/* PARENT DASHBOARD */
+.essay-review-card{background:white;border-radius:12px;padding:16px;margin-bottom:12px;border:0.5px solid var(--color-border-tertiary,#ddd)}
+.essay-review-card .meta{font-size:12px;color:var(--color-text-secondary,#666);margin-bottom:8px}
+.essay-review-card .topic-tag{background:#EEEDFE;color:#534AB7;font-size:12px;border-radius:20px;padding:2px 10px;margin-right:6px}
+.essay-review-card .date-tag{font-size:12px;color:var(--color-text-secondary,#666)}
+.essay-body{font-size:14px;line-height:1.7;color:var(--color-text-primary,#111);background:var(--color-background-secondary,#f8f8f5);border-radius:8px;padding:12px;margin-top:8px}
+
+/* TYPING GAME */
+#typingCanvas{display:block;width:100%;border-radius:12px;background:#1a1a2e;cursor:default;touch-action:none}
+.typing-stats{display:flex;gap:12px;margin-bottom:10px}
+.typing-stat{flex:1;background:white;border-radius:10px;padding:10px;text-align:center;border:0.5px solid #FAC775}
+.typing-stat .val{font-size:22px;font-weight:500;color:#412402}
+.typing-stat .lbl{font-size:11px;color:var(--color-text-secondary,#888)}
+.next-key{display:inline-block;background:#1a1a2e;color:#FAC775;border-radius:6px;padding:6px 18px;font-size:22px;font-weight:500;font-family:monospace;border:2px solid #FAC775;text-align:center;min-width:48px}
+
+/* SPELLING */
+.spell-progress{display:flex;gap:6px;margin-bottom:20px}
+.spell-dot{width:14px;height:14px;border-radius:50%;background:#D3D1C7;transition:all .3s}
+.spell-dot.correct{background:#1D9E75}
+.spell-dot.wrong{background:#D85A30}
+.spell-dot.current{background:#7F77DD;transform:scale(1.3)}
+.spell-word-display{font-size:18px;font-weight:500;text-align:center;margin-bottom:8px;min-height:28px;color:var(--color-text-primary,#111)}
+.spell-hint{font-size:14px;text-align:center;color:#D85A30;font-weight:500;min-height:24px;letter-spacing:3px;margin-bottom:12px}
+.spell-input-wrap{display:flex;gap:10px;margin-bottom:10px}
+.spell-input{flex:1;border:2px solid #B5D4F4;border-radius:10px;padding:10px 14px;font-size:16px;font-family:inherit;background:var(--color-background-primary,white);color:var(--color-text-primary,#111)}
+.spell-input:focus{outline:none;border-color:#378ADD}
+.spell-input.correct{border-color:#1D9E75;background:#E1F5EE}
+.spell-input.wrong{border-color:#D85A30;background:#FAECE7}
+.speak-btn{background:#E6F1FB;border:0.5px solid #B5D4F4;border-radius:10px;padding:10px 14px;cursor:pointer;font-size:16px;color:#185FA5}
+.speak-btn:hover{background:#B5D4F4}
+.hint-btn{background:#FAEEDA;border:0.5px solid #FAC775;border-radius:10px;padding:8px 16px;cursor:pointer;font-size:13px;color:#412402}
+.hint-btn:hover{background:#FAC775}
+.result-screen{text-align:center;padding:24px}
+.result-screen .score-big{font-size:48px;font-weight:500;color:#3C3489}
+.result-screen .score-sub{font-size:16px;color:var(--color-text-secondary,#666);margin-bottom:20px}
+.stars{font-size:32px;letter-spacing:4px;margin-bottom:16px}
+
+/* XP popup */
+.xp-pop{position:fixed;top:80px;right:20px;background:#FAC775;color:#412402;border-radius:12px;padding:10px 20px;font-weight:500;font-size:15px;z-index:1000;pointer-events:none;opacity:0;transform:translateY(-10px);transition:all .4s}
+.xp-pop.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+
+<!-- XP Popup -->
+<div class="xp-pop" id="xpPop">+10 XP ⭐</div>
+<!-- Toast -->
+<div class="saved-toast" id="savedToast">Progress saved! 💾</div>
+
+<!-- HOME -->
+<div class="screen active" id="home">
+<div class="home-header">
+  <div style="font-size:40px">🏆</div>
+  <h1>Write &amp; Shine!</h1>
+  <p>Learn, practice, earn points — become a super writer!</p>
+</div>
+<div class="xp-bar-wrap">
+  <div class="avatar" id="homeAvatar">🌟</div>
+  <div class="xp-info">
+    <div class="name" id="playerName">Super Writer</div>
+    <div class="level" id="playerLevel">Level 1 — Keep going!</div>
+    <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:5%"></div></div>
+  </div>
+  <div class="xp-pts" id="totalPts">0 XP</div>
+</div>
+<div class="modules">
+  <div class="module-card outline" onclick="showOutline()">
+    <div class="icon">📋</div>
+    <h3>Outline Builder</h3>
+    <p>Organize your ideas fast!</p>
+  </div>
+  <div class="module-card essay" onclick="showEssay()">
+    <div class="icon">✍️</div>
+    <h3>Essay Writer</h3>
+    <p>Turn your outline into an essay</p>
+  </div>
+  <div class="module-card typing" onclick="showTyping()">
+    <div class="icon">⌨️</div>
+    <h3>Typing Adventure</h3>
+    <p>Catch the falling letters!</p>
+  </div>
+  <div class="module-card spelling" onclick="showSpelling()">
+    <div class="icon">🔤</div>
+    <h3>Spelling Quest</h3>
+    <p>Listen and spell correctly</p>
+  </div>
+</div>
+<div class="modules" style="grid-template-columns:1fr;margin-top:10px">
+  <div class="module-card" style="border-color:#D3D1C7;background:#F1EFE8;text-align:left;display:flex;align-items:center;gap:12px;padding:14px 16px" onclick="showParent()">
+    <div style="font-size:28px">👨‍👩‍👧</div>
+    <div><h3 style="font-size:14px">Parent Dashboard</h3><p>Review essays &amp; progress</p></div>
+  </div>
+</div>
+<div class="badges-row">
+  <h4>Your Badges</h4>
+  <div class="badges" id="badgesRow">
+    <div class="badge" id="b-first">🖊️ First Essay</div>
+    <div class="badge" id="b-speller">🔤 Speller</div>
+    <div class="badge" id="b-typist">⌨️ Typist</div>
+    <div class="badge" id="b-outline">📋 Organizer</div>
+    <div class="badge" id="b-streak">🔥 On Fire</div>
+  </div>
+</div>
+</div>
+
+<!-- OUTLINE MODULE -->
+<div class="screen" id="outline">
+<button class="back-btn" onclick="goHome()">← Home</button>
+<div class="screen-title">📋 Outline Builder</div>
+<div class="screen-sub">Pick a topic, then fill in your outline!</div>
+<div id="outlineTopicPicker">
+  <p style="font-size:14px;font-weight:500;margin-bottom:10px;color:var(--color-text-primary)">Choose a topic:</p>
+  <div class="topic-grid" id="topicGrid"></div>
+  <button class="action-btn primary" onclick="startOutline()" id="topicGoBtn" disabled>Start Writing →</button>
+</div>
+<div id="outlineForm" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+    <span style="font-size:14px;font-weight:500;color:#534AB7" id="chosenTopicLabel"></span>
+    <span class="pts-badge">+20 XP for completing!</span>
+  </div>
+  <div class="outline-section">
+    <div class="outline-label"><div class="badge-letter">A</div>Introduction — What is your topic?</div>
+    <textarea class="outline-input" id="ol-a" placeholder="My topic is... I am going to tell you about..." rows="2"></textarea>
+  </div>
+  <div class="outline-section">
+    <div class="outline-label"><div class="badge-letter">B</div>Supporting Idea / Fact #1</div>
+    <textarea class="outline-input" id="ol-b" placeholder="One thing about this topic is..." rows="2"></textarea>
+  </div>
+  <div class="outline-section">
+    <div class="outline-label"><div class="badge-letter">C</div>Supporting Idea / Fact #2</div>
+    <textarea class="outline-input" id="ol-c" placeholder="Another important thing is..." rows="2"></textarea>
+  </div>
+  <div class="outline-section">
+    <div class="outline-label"><div class="badge-letter">D</div>Supporting Idea / Fact #3</div>
+    <textarea class="outline-input" id="ol-d" placeholder="Also, I learned that..." rows="2"></textarea>
+  </div>
+  <div class="outline-section">
+    <div class="outline-label"><div class="badge-letter">E</div>Conclusion — Wrap it up!</div>
+    <textarea class="outline-input" id="ol-e" placeholder="In conclusion, I think... This topic is important because..." rows="2"></textarea>
+  </div>
+  <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+    <button class="action-btn primary" onclick="saveOutline()">Save Outline ✓</button>
+    <button class="action-btn success" onclick="goToEssay()">Write My Essay →</button>
+  </div>
+</div>
+</div>
+
+<!-- ESSAY MODULE -->
+<div class="screen" id="essay">
+<button class="back-btn" onclick="goHome()">← Home</button>
+<div class="screen-title">✍️ Essay Writer</div>
+<div class="screen-sub" id="essaySub">Use your outline as a guide — write your essay below!</div>
+<div id="essayOutlineRef" class="essay-outline-ref" style="display:none">
+  <h4>📋 Your Outline</h4>
+  <ul id="essayOutlineList"></ul>
+</div>
+<div id="noOutlineMsg" style="background:#FAEEDA;border-radius:10px;padding:12px;margin-bottom:14px;font-size:14px;color:#412402;display:none">
+  💡 Tip: Complete the <strong>Outline Builder</strong> first to see your outline here as a guide!
+</div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+  <span style="font-size:13px;color:var(--color-text-secondary)">Words: <strong id="wordCount">0</strong></span>
+  <span class="pts-badge">+30 XP for submitting!</span>
+</div>
+<textarea class="essay-area" id="essayText" placeholder="Start writing your essay here... Use your outline to guide you! Remember: Introduction → Facts → Conclusion" oninput="updateWordCount()"></textarea>
+<div class="essay-toolbar">
+  <button class="action-btn primary" onclick="saveEssay()">💾 Save Progress</button>
+  <button class="action-btn success" onclick="submitEssay()">✅ Submit Essay</button>
+</div>
+<div id="essayFeedback" style="display:none" class="feedback-box">
+  <h4>✅ Great Job! Here's your feedback:</h4>
+  <div id="feedbackItems"></div>
+</div>
+</div>
+
+<!-- PARENT DASHBOARD -->
+<div class="screen" id="parent">
+<button class="back-btn" onclick="goHome()">← Back</button>
+<div class="screen-title">👨‍👩‍👧 Parent Dashboard</div>
+<div class="screen-sub">Review your child's submitted essays and progress.</div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:20px">
+  <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:0.5px solid #CECBF6">
+    <div style="font-size:20px;font-weight:500;color:#3C3489" id="pEssayCount">0</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">Essays</div>
+  </div>
+  <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:0.5px solid #9FE1CB">
+    <div style="font-size:20px;font-weight:500;color:#0F6E56" id="pXP">0</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">Total XP</div>
+  </div>
+  <div style="background:white;border-radius:10px;padding:12px;text-align:center;border:0.5px solid #FAC775">
+    <div style="font-size:20px;font-weight:500;color:#412402" id="pLevel">1</div>
+    <div style="font-size:12px;color:var(--color-text-secondary)">Level</div>
+  </div>
+</div>
+<h3 style="font-size:16px;font-weight:500;margin-bottom:12px">Submitted Essays</h3>
+<div id="parentEssays">
+  <p style="color:var(--color-text-secondary);font-size:14px">No essays submitted yet. Encourage your child to complete the Essay Writer module!</p>
+</div>
+</div>
+
+<!-- TYPING GAME -->
+<div class="screen" id="typing">
+<button class="back-btn" onclick="stopTypingGame();goHome()">← Home</button>
+<div class="screen-title">⌨️ Typing Adventure</div>
+<div class="screen-sub">Type the letter before it hits the bottom!</div>
+<div class="typing-stats">
+  <div class="typing-stat"><div class="val" id="tScore">0</div><div class="lbl">Score</div></div>
+  <div class="typing-stat"><div class="val" id="tLevel">1</div><div class="lbl">Level</div></div>
+  <div class="typing-stat"><div class="val" id="tLives">❤️❤️❤️</div><div class="lbl">Lives</div></div>
+  <div class="typing-stat"><div class="val" id="tCombo">x1</div><div class="lbl">Combo</div></div>
+</div>
+<canvas id="typingCanvas" width="640" height="360"></canvas>
+<div style="text-align:center;margin-top:10px;font-size:14px;color:var(--color-text-secondary)">
+  Press the key that matches the letter on screen!
+</div>
+<div id="typingGameOver" style="display:none;text-align:center;background:white;border-radius:12px;padding:20px;margin-top:12px;border:0.5px solid #FAC775">
+  <div style="font-size:28px;margin-bottom:8px">🎮 Game Over!</div>
+  <div style="font-size:18px;font-weight:500;margin-bottom:4px">Score: <span id="finalTypingScore">0</span></div>
+  <div style="font-size:14px;color:var(--color-text-secondary);margin-bottom:14px">Level reached: <span id="finalTypingLevel">1</span></div>
+  <button class="action-btn primary" onclick="startTypingGame()" style="margin-right:8px">Play Again</button>
+  <button class="action-btn" style="border:0.5px solid var(--color-border-secondary)" onclick="goHome()">Home</button>
+</div>
+</div>
+
+<!-- SPELLING -->
+<div class="screen" id="spelling">
+<button class="back-btn" onclick="goHome()">← Home</button>
+<div class="screen-title">🔤 Spelling Quest</div>
+<div id="spellPlay">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div class="screen-sub" style="margin:0">Listen and type the word!</div>
+    <span class="pts-badge" id="spellLevelLabel">Level 1</span>
+  </div>
+  <div class="spell-progress" id="spellDots"></div>
+  <div style="background:white;border-radius:14px;padding:20px;border:0.5px solid #B5D4F4;text-align:center">
+    <div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:8px">Listen to the word, then type it below</div>
+    <button class="speak-btn" onclick="speakWord()" style="font-size:22px;padding:12px 24px;margin-bottom:12px">🔊 Hear Word</button>
+    <div class="spell-hint" id="spellHint"></div>
+    <div class="spell-input-wrap">
+      <input type="text" class="spell-input" id="spellInput" placeholder="Type the word here..." onkeydown="spellKeydown(event)" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="hint-btn" onclick="showHint()">Hint 💡</button>
+    </div>
+    <button class="action-btn primary" onclick="checkSpelling()" style="width:100%">Check ✓</button>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+    <span style="font-size:13px;color:var(--color-text-secondary)">Word <span id="spellWordNum">1</span> of 5</span>
+    <span style="font-size:13px;color:#1D9E75;font-weight:500" id="spellCorrectCount">✓ 0 correct</span>
+  </div>
+</div>
+<div id="spellResult" style="display:none" class="result-screen">
+  <div class="stars" id="spellStars">⭐⭐⭐</div>
+  <div class="score-big" id="spellScoreNum">5/5</div>
+  <div class="score-sub" id="spellScoreMsg">Amazing! Perfect score!</div>
+  <div id="retryWords" style="margin:14px 0;text-align:left;display:none">
+    <p style="font-size:14px;font-weight:500;margin-bottom:8px;color:#D85A30">Practice these again:</p>
+    <div id="retryWordsList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <button class="action-btn primary" onclick="nextSpellLevel()" style="margin-right:8px">Next Level →</button>
+  <button class="action-btn" style="border:0.5px solid var(--color-border-secondary)" onclick="goHome()">Home</button>
+</div>
+</div>
+
+<script>
+// === STATE ===
+let state={xp:0,level:1,essays:[],outline:{},outlineTopic:'',badges:{first:false,speller:false,typist:false,outline:false,streak:false},spellStreak:0,typingHighScore:0};
+
+// Try load from storage
+(async()=>{try{const r=await window.storage.get('writeshine-state');if(r&&r.value){const s=JSON.parse(r.value);Object.assign(state,s);updateXPDisplay()}}catch(e){}})();
+
+async function saveState(){try{await window.storage.set('writeshine-state',JSON.stringify(state))}catch(e){}}
+
+// === TOPICS ===
+const TOPICS=[
+  ['🐬 Dolphins','🦁 Lions','🌋 Volcanoes','🚀 Space Exploration'],
+  ['🦖 Dinosaurs','🌊 Oceans','🌈 Weather & Rainbows','🏔️ Mountains'],
+  ['🐝 Honeybees','🌍 Rainforests','🦋 Butterflies','⚡ Electricity'],
+  ['🐉 Dragons (Fantasy)','🏛️ Ancient Egypt','🌙 The Moon','🦈 Sharks'],
+];
+let topicSet=0,chosenTopic='',savedEssay='',savedOutline={},spellWords=[],spellIdx=0,spellCorrect=0,spellMissed=[];
+
+// === HOME / XP ===
+function updateXPDisplay(){
+  document.getElementById('totalPts').textContent=state.xp+' XP';
+  const lvl=Math.floor(state.xp/100)+1;
+  state.level=lvl;
+  document.getElementById('playerLevel').textContent='Level '+lvl+' — Keep going!';
+  const pct=((state.xp%100)/100)*100;
+  document.getElementById('xpFill').style.width=pct+'%';
+  const names=['Super Writer','Star Student','Word Wizard','Essay Expert','Grammar Guru'];
+  document.getElementById('playerName').textContent=names[Math.min(lvl-1,names.length-1)];
+  // parent
+  document.getElementById('pXP').textContent=state.xp;
+  document.getElementById('pLevel').textContent=lvl;
+  document.getElementById('pEssayCount').textContent=state.essays.length;
+}
+
+function addXP(amt,label){
+  state.xp+=amt;
+  updateXPDisplay();
+  const pop=document.getElementById('xpPop');
+  pop.textContent='+'+(label||amt)+' XP ⭐';
+  pop.classList.add('show');
+  setTimeout(()=>pop.classList.remove('show'),2200);
+  saveState();
+}
+
+function checkBadge(key,badgeId){
+  if(!state.badges[key]){
+    state.badges[key]=true;
+    document.getElementById('b-'+badgeId).classList.add('earned');
+    saveState();
+  }
+}
+
+// === SCREENS ===
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function goHome(){showScreen('home');updateXPDisplay()}
+
+// === OUTLINE ===
+function showOutline(){
+  loadTopics();
+  showScreen('outline');
+}
+function loadTopics(){
+  topicSet=(topicSet+1)%TOPICS.length;
+  const grid=document.getElementById('topicGrid');
+  grid.innerHTML='';
+  TOPICS[topicSet].forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='topic-btn';
+    btn.textContent=t;
+    btn.onclick=()=>{document.querySelectorAll('.topic-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');chosenTopic=t;document.getElementById('topicGoBtn').disabled=false};
+    grid.appendChild(btn);
+  });
+}
+function startOutline(){
+  if(!chosenTopic)return;
+  document.getElementById('outlineTopicPicker').style.display='none';
+  document.getElementById('outlineForm').style.display='block';
+  document.getElementById('chosenTopicLabel').textContent='Topic: '+chosenTopic;
+  ['a','b','c','d','e'].forEach(k=>{
+    const v=savedOutline[k]||'';
+    document.getElementById('ol-'+k).value=v;
+  });
+}
+function saveOutline(){
+  const ol={};
+  ['a','b','c','d','e'].forEach(k=>ol[k]=document.getElementById('ol-'+k).value.trim());
+  if(!ol.a&&!ol.b){alert('Please fill in at least the Introduction and one supporting idea!');return}
+  savedOutline=ol;
+  state.outline=ol;
+  state.outlineTopic=chosenTopic;
+  addXP(20,'20');
+  checkBadge('outline','outline');
+  showToast('Outline saved! 📋');
+  saveState();
+}
+function goToEssay(){
+  saveOutline();
+  showEssay(true);
+}
+function showToast(msg){
+  const t=document.getElementById('savedToast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// === ESSAY ===
+function showEssay(fromOutline){
+  showScreen('essay');
+  const hasOutline=state.outline&&state.outline.a;
+  const olRef=document.getElementById('essayOutlineRef');
+  const noOl=document.getElementById('noOutlineMsg');
+  const topic=state.outlineTopic||chosenTopic||'';
+  if(topic)document.getElementById('essaySub').textContent='Topic: '+topic+' — Use your outline as a guide!';
+  if(hasOutline){
+    olRef.style.display='block';noOl.style.display='none';
+    const ul=document.getElementById('essayOutlineList');
+    ul.innerHTML='';
+    const labels=['Introduction','Fact 1','Fact 2','Fact 3','Conclusion'];
+    ['a','b','c','d','e'].forEach((k,i)=>{
+      if(state.outline[k]){const li=document.createElement('li');li.textContent=labels[i]+': '+state.outline[k];ul.appendChild(li)}
+    });
+  } else {olRef.style.display='none';noOl.style.display='block'}
+  if(savedEssay)document.getElementById('essayText').value=savedEssay;
+  updateWordCount();
+}
+function updateWordCount(){
+  const txt=document.getElementById('essayText').value.trim();
+  const w=txt?txt.split(/\s+/).length:0;
+  document.getElementById('wordCount').textContent=w;
+}
+function saveEssay(){
+  savedEssay=document.getElementById('essayText').value;
+  showToast('Progress saved! 💾');
+  saveState();
+}
+async function submitEssay(){
+  const txt=document.getElementById('essayText').value.trim();
+  if(txt.length<30){alert('Please write a bit more before submitting!');return}
+  savedEssay=txt;
+  // Grammar check via AI
+  const feedbackEl=document.getElementById('essayFeedback');
+  const itemsEl=document.getElementById('feedbackItems');
+  feedbackEl.style.display='block';
+  itemsEl.innerHTML='<p style="color:#0F6E56;font-size:14px">Checking your essay... ✨</p>';
+  let feedback=[];
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,messages:[{role:'user',content:`You are a friendly teacher reviewing a 3rd/4th grade student's essay. Review this essay and give 3-4 short, encouraging feedback points. Focus on: what they did well, any spelling mistakes (list up to 3), any grammar tips. Be very encouraging and use simple language. Format as JSON array of objects with keys: type ("good","spell","grammar"), text (your feedback, max 15 words). Essay topic: "${state.outlineTopic||'unknown'}"\n\nEssay:\n${txt}`}]})});
+    const data=await res.json();
+    const raw=data.content.map(c=>c.text||'').join('');
+    const clean=raw.replace(/```json|```/g,'').trim();
+    feedback=JSON.parse(clean);
+  } catch(e){feedback=[{type:'good',text:'Great effort! You wrote a full essay — that takes real skill!'},{type:'good',text:'Your ideas are organized well. Keep it up!'},{type:'grammar',text:'Read your essay aloud to catch any small mistakes.'}]}
+  itemsEl.innerHTML='';
+  const icons={good:'✅',spell:'🔤',grammar:'📝'};
+  feedback.forEach(f=>{
+    const div=document.createElement('div');
+    div.className='feedback-item';
+    div.innerHTML=`<span>${icons[f.type]||'💡'}</span><span style="font-size:14px">${f.text}</span>`;
+    itemsEl.appendChild(div);
+  });
+  // Save to parent dashboard
+  const entry={topic:state.outlineTopic||chosenTopic||'Essay',date:new Date().toLocaleDateString(),text:txt,feedback};
+  state.essays.push(entry);
+  addXP(30,'30');
+  checkBadge('first','first');
+  renderParentEssays();
+  saveState();
+}
+
+// === PARENT ===
+function showParent(){
+  renderParentEssays();
+  updateXPDisplay();
+  showScreen('parent');
+}
+function renderParentEssays(){
+  const el=document.getElementById('parentEssays');
+  if(!state.essays.length){el.innerHTML='<p style="color:var(--color-text-secondary);font-size:14px">No essays submitted yet.</p>';return}
+  el.innerHTML='';
+  [...state.essays].reverse().forEach(e=>{
+    const d=document.createElement('div');
+    d.className='essay-review-card';
+    const fbHtml=(e.feedback||[]).map(f=>`<div style="font-size:12px;color:#444;margin-bottom:3px">${f.type==='good'?'✅':f.type==='spell'?'🔤':'📝'} ${f.text}</div>`).join('');
+    d.innerHTML=`<div class="meta"><span class="topic-tag">${e.topic}</span><span class="date-tag">${e.date}</span></div><div class="essay-body">${e.text}</div><div style="margin-top:10px"><p style="font-size:12px;font-weight:500;color:#0F6E56;margin-bottom:4px">AI Feedback:</p>${fbHtml||'<span style="font-size:12px;color:#888">No feedback yet</span>'}</div>`;
+    el.appendChild(d);
+  });
+}
+
+// === TYPING GAME ===
+let typingCtx,typingAnim,typingLetters=[],typingScore=0,typingLevel=1,typingLives=3,typingCombo=1,typingActive=false,typingSpeed=1.2,typingInterval;
+const ALPHABET='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+function showTyping(){
+  showScreen('typing');
+  const canvas=document.getElementById('typingCanvas');
+  typingCtx=canvas.getContext('2d');
+  startTypingGame();
+}
+function startTypingGame(){
+  document.getElementById('typingGameOver').style.display='none';
+  typingScore=0;typingLevel=1;typingLives=3;typingCombo=1;typingSpeed=1.2;typingLetters=[];typingActive=true;
+  updateTypingUI();
+  if(typingAnim)cancelAnimationFrame(typingAnim);
+  clearInterval(typingInterval);
+  typingInterval=setInterval(spawnLetter,2000);
+  spawnLetter();
+  typingLoop();
+  document.addEventListener('keydown',onTypingKey);
+}
+function stopTypingGame(){
+  typingActive=false;
+  if(typingAnim)cancelAnimationFrame(typingAnim);
+  clearInterval(typingInterval);
+  document.removeEventListener('keydown',onTypingKey);
+}
+function spawnLetter(){
+  if(!typingActive)return;
+  const canvas=document.getElementById('typingCanvas');
+  const letter=ALPHABET[Math.floor(Math.random()*26)];
+  const x=30+Math.random()*(canvas.width-60);
+  const colors=['#7F77DD','#1D9E75','#EF9F27','#D85A30','#378ADD','#D4537E'];
+  typingLetters.push({letter,x,y:-30,color:colors[Math.floor(Math.random()*colors.length)],size:36+Math.floor(Math.random()*10),hit:false,hitAlpha:1});
+}
+function typingLoop(){
+  if(!typingActive)return;
+  const canvas=document.getElementById('typingCanvas');
+  typingCtx.clearRect(0,0,canvas.width,canvas.height);
+  typingCtx.fillStyle='#1a1a2e';
+  typingCtx.fillRect(0,0,canvas.width,canvas.height);
+  // Ground line
+  typingCtx.strokeStyle='rgba(255,255,255,0.15)';
+  typingCtx.lineWidth=1;
+  typingCtx.beginPath();typingCtx.moveTo(0,canvas.height-30);typingCtx.lineTo(canvas.width,canvas.height-30);typingCtx.stroke();
+  const alive=[];
+  typingLetters.forEach(l=>{
+    if(l.hit){
+      l.y-=3;l.hitAlpha-=0.07;
+      if(l.hitAlpha>0){
+        typingCtx.save();typingCtx.globalAlpha=l.hitAlpha;
+        typingCtx.font=`bold ${l.size}px monospace`;typingCtx.fillStyle='#FAC775';typingCtx.textAlign='center';
+        typingCtx.fillText('✓'+l.letter,l.x,l.y);typingCtx.restore();alive.push(l);
+      }
+      return;
+    }
+    l.y+=typingSpeed;
+    // Drop shadow glow
+    typingCtx.save();
+    typingCtx.shadowColor=l.color;typingCtx.shadowBlur=12;
+    typingCtx.font=`bold ${l.size}px monospace`;typingCtx.fillStyle=l.color;typingCtx.textAlign='center';
+    typingCtx.fillText(l.letter,l.x,l.y);typingCtx.restore();
+    if(l.y>=canvas.height-30){
+      typingLives--;typingCombo=1;
+      updateTypingUI();
+      if(typingLives<=0){gameOver();return}
+    } else {alive.push(l)}
+  });
+  typingLetters=alive;
+  typingAnim=requestAnimationFrame(typingLoop);
+}
+function onTypingKey(e){
+  if(!typingActive)return;
+  const k=e.key.toUpperCase();
+  if(!/^[A-Z]$/.test(k))return;
+  let hit=false;
+  // Find lowest matching letter
+  let lowest=null,lowestY=-999;
+  typingLetters.forEach(l=>{if(!l.hit&&l.letter===k&&l.y>lowestY){lowest=l;lowestY=l.y}});
+  if(lowest){lowest.hit=true;hit=true}
+  if(hit){
+    typingScore+=10*typingCombo;typingCombo++;
+    if(typingScore>=typingLevel*150){typingLevel++;typingSpeed+=0.3;clearInterval(typingInterval);typingInterval=setInterval(spawnLetter,Math.max(800,2000-typingLevel*150))}
+    updateTypingUI();
+  } else {typingCombo=1;updateTypingUI()}
+}
+function updateTypingUI(){
+  document.getElementById('tScore').textContent=typingScore;
+  document.getElementById('tLevel').textContent=typingLevel;
+  document.getElementById('tLives').textContent='❤️'.repeat(typingLives)+'🖤'.repeat(3-typingLives);
+  document.getElementById('tCombo').textContent='x'+typingCombo;
+}
+function gameOver(){
+  typingActive=false;
+  clearInterval(typingInterval);
+  cancelAnimationFrame(typingAnim);
+  document.removeEventListener('keydown',onTypingKey);
+  document.getElementById('typingGameOver').style.display='block';
+  document.getElementById('finalTypingScore').textContent=typingScore;
+  document.getElementById('finalTypingLevel').textContent=typingLevel;
+  if(typingScore>state.typingHighScore){state.typingHighScore=typingScore;checkBadge('typist','typist')}
+  addXP(Math.floor(typingScore/5),'Typing');
+  saveState();
+}
+
+// === SPELLING ===
+const SPELL_WORDS=[
+  // Level 1-2 (3rd grade)
+  ['friend','people','thought','because','beautiful','special','different','together','important','always'],
+  ['another','morning','brought','outside','through','during','change','usually','enough','whether'],
+  // Level 3-4 (4th grade)
+  ['adventure','beginning','celebrate','complete','continue','decision','describe','discover','excellent','February'],
+  ['government','happiness','immediately','independent','interesting','knowledge','language','necessary','occasion','paragraph'],
+];
+let spellLevelIdx=0,spellWordList=[],spellMissedWords=[];
+
+function showSpelling(){
+  spellLevelIdx=0;
+  startSpellLevel();
+  showScreen('spelling');
+}
+function startSpellLevel(){
+  const pool=[...SPELL_WORDS[Math.min(spellLevelIdx,SPELL_WORDS.length-1)]];
+  // Mix in missed words
+  if(spellMissedWords.length){pool.push(...spellMissedWords);spellMissedWords=[]}
+  // Shuffle and pick 5
+  for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+  spellWordList=pool.slice(0,5);
+  spellIdx=0;spellCorrect=0;
+  document.getElementById('spellPlay').style.display='block';
+  document.getElementById('spellResult').style.display='none';
+  document.getElementById('spellLevelLabel').textContent='Level '+(spellLevelIdx+1);
+  renderSpellDots();
+  loadSpellWord();
+}
+function renderSpellDots(){
+  const el=document.getElementById('spellDots');
+  el.innerHTML='';
+  spellWordList.forEach((_,i)=>{
+    const d=document.createElement('div');
+    d.className='spell-dot'+(i===spellIdx?' current':'');
+    d.id='sdot-'+i;
+    el.appendChild(d);
+  });
+}
+function loadSpellWord(){
+  document.getElementById('spellHint').textContent='';
+  document.getElementById('spellInput').value='';
+  document.getElementById('spellInput').className='spell-input';
+  document.getElementById('spellWordNum').textContent=spellIdx+1;
+  document.getElementById('spellCorrectCount').textContent='✓ '+spellCorrect+' correct';
+  renderSpellDots();
+}
+function speakWord(){
+  const word=spellWordList[spellIdx];
+  if(!word)return;
+  const u=new SpeechSynthesisUtterance(word);
+  u.rate=0.85;u.pitch=1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+function showHint(){
+  const word=spellWordList[spellIdx];
+  document.getElementById('spellHint').textContent=word;
+  setTimeout(()=>document.getElementById('spellHint').textContent='',1500);
+}
+function spellKeydown(e){if(e.key==='Enter')checkSpelling()}
+function checkSpelling(){
+  const word=spellWordList[spellIdx];
+  const input=document.getElementById('spellInput').value.trim().toLowerCase();
+  const inp=document.getElementById('spellInput');
+  if(!input){speakWord();return}
+  const correct=input===word.toLowerCase();
+  inp.className='spell-input '+(correct?'correct':'wrong');
+  if(correct){
+    spellCorrect++;
+    const dot=document.getElementById('sdot-'+spellIdx);
+    if(dot)dot.className='spell-dot correct';
+  } else {
+    spellMissedWords.push(word);
+    const dot=document.getElementById('sdot-'+spellIdx);
+    if(dot)dot.className='spell-dot wrong';
+  }
+  setTimeout(()=>{
+    spellIdx++;
+    if(spellIdx>=spellWordList.length){showSpellResult()}
+    else{loadSpellWord();setTimeout(()=>speakWord(),400)}
+  },900);
+}
+function showSpellResult(){
+  document.getElementById('spellPlay').style.display='none';
+  document.getElementById('spellResult').style.display='block';
+  const pct=spellCorrect/spellWordList.length;
+  document.getElementById('spellScoreNum').textContent=spellCorrect+'/'+spellWordList.length;
+  let stars='',msg='';
+  if(pct>=1){stars='⭐⭐⭐';msg='Amazing! Perfect score! You\'re a spelling star! 🎉'}
+  else if(pct>=0.7){stars='⭐⭐';msg='Great job! Almost there — practice the missed ones!'}
+  else{stars='⭐';msg='Keep practicing — you\'ll get it! 💪'}
+  document.getElementById('spellStars').textContent=stars;
+  document.getElementById('spellScoreMsg').textContent=msg;
+  if(spellMissedWords.length){
+    document.getElementById('retryWords').style.display='block';
+    const list=document.getElementById('retryWordsList');
+    list.innerHTML='';
+    [...new Set(spellMissedWords)].forEach(w=>{
+      const sp=document.createElement('span');
+      sp.style.cssText='background:#FAECE7;color:#993C1D;border-radius:20px;padding:4px 14px;font-size:13px;font-weight:500';
+      sp.textContent=w;list.appendChild(sp);
+    });
+  }
+  const xpEarned=spellCorrect*10;
+  addXP(xpEarned,'Spelling');
+  if(pct>=0.8)checkBadge('speller','speller');
+  saveState();
+}
+function nextSpellLevel(){
+  if(spellLevelIdx<SPELL_WORDS.length-1)spellLevelIdx++;
+  startSpellLevel();
+  setTimeout(()=>speakWord(),600);
+}
+
+// Init
+updateXPDisplay();
+setTimeout(()=>{const sc=document.getElementById('spelling');if(sc.classList.contains('active'))speakWord()},500);
+</script>
+</body>
+</html>
